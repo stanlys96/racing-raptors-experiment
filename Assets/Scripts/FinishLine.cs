@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class FinishLine : MonoBehaviour
 {
+    public GameObject leaderboard;
     private int counter = 0;
     private IEnumerator OnTriggerEnter2D(Collider2D collision)
     {
@@ -13,9 +14,11 @@ public class FinishLine : MonoBehaviour
             counter++;
             print(counter);
         }
-        if (counter == 8)
+        if (counter == 6)
         {
-            yield return new WaitForSeconds(10f);
+            yield return new WaitForSeconds(2f);
+            leaderboard.SetActive(true);
+            yield return new WaitForSeconds(100f);
             yield return SceneManager.LoadSceneAsync(0);
             counter = 0;
         }

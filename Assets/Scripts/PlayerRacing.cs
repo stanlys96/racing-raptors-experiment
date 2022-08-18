@@ -1,8 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 
 public class PlayerRacing : MonoBehaviour
 {
@@ -42,10 +42,15 @@ public class PlayerRacing : MonoBehaviour
     private float[] seventhPlaceSpeeds = { 1.1f, 1.03f, 0.9f, 0.92f, 0.99f, 1.02f, 1f };
     private float[] eighthPlaceSpeeds =  { 1.03f, 1.04f, 0.94f, 0.92f, 1f, 1.03f, 1f };
     private bool isRotating = false;
+    private float delayGoingLeftOrRight = 0.25f;
+    private float lastGoingLeftOrRight = Mathf.Infinity;
+    private float timeSinceLastStart = Mathf.Infinity;
+    private float timeBeforeAllStart = 5f;
 
     // Start is called before the first frame update
     void Start()
     {
+        timeSinceLastStart = 0;
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -124,8 +129,14 @@ public class PlayerRacing : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        checkTime += Time.deltaTime;
-        timeSinceLastChangeSeason += Time.deltaTime;
+        timeSinceLastStart += Time.deltaTime;
+        if (timeSinceLastStart > timeBeforeAllStart)
+        {
+            checkTime += Time.deltaTime;
+            timeSinceLastChangeSeason += Time.deltaTime;
+            lastGoingLeftOrRight += Time.deltaTime;
+        }
+
         if (timeSinceLastChangeSeason > changeSeason)
         {
             timeSinceLastChangeSeason = 0f;
@@ -153,9 +164,9 @@ public class PlayerRacing : MonoBehaviour
         //}
         if (tokenId == APICall.instance.fighters[1] && index == 1)
         {
+            lastGoingLeftOrRight = 0f;
             GameObject targetFighter = GameObject.FindGameObjectWithTag("Fighter1");
             //transform.position = Vector2.MoveTowards(transform.position, targetFighter.transform.position, speed * 1.175f * Time.deltaTime);
-            print(Vector2.Distance(transform.position, targetFighter.transform.position));
             if (Vector2.Distance(transform.position, targetFighter.transform.position) < 1f)
             {
                 animator.SetTrigger("jump");
@@ -179,13 +190,16 @@ public class PlayerRacing : MonoBehaviour
             diff.Normalize();
             float rot_z = Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg;
             //transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, 0, angleDeg), turnSpeed * Time.deltaTime);
-            transform.rotation = Quaternion.Euler(0, 0, rot_z - 90);
+            //transform.rotation = Quaternion.Euler(0, 0, rot_z - 90);
+            StartCoroutine(SmoothRotation(targetFighter, diff));
             transform.Translate(Vector2.up * speed * 1.125f * Time.deltaTime);
-            transform.Translate(Vector2.right * 0.8f * Time.deltaTime);
         } 
         else
         {
-            transform.Translate(Vector2.up * speed * Time.deltaTime);
+            if (timeSinceLastStart > timeBeforeAllStart)
+            {
+                transform.Translate(Vector2.up * speed * Time.deltaTime);
+            }
         }
 
         //if (gameObject.name == "7_0 (1)")
@@ -214,6 +228,26 @@ public class PlayerRacing : MonoBehaviour
                 isJumping = true;
                 animator.SetTrigger("jump");
             }
+        }
+    }
+
+    IEnumerator SmoothRotation(GameObject Target, Vector3 difference)
+    {
+        //transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, 0, angleDeg), turnSpeed * Time.deltaTime);
+        //iterate through the number of steps
+        transform.Translate((difference.x < 0 ? Vector2.right : Vector2.left) * 0.5f * Time.deltaTime);
+        int iMax = 100;
+        for (int i = 1; i <= iMax; i++)
+        {
+            Vector3 diff = Target.transform.position - transform.position;
+            diff.Normalize();
+            float rot_z = Mathf.Atan2(diff.y + 0.4f, diff.x) * Mathf.Rad2Deg;
+            //turn 1 degree in  the right direction
+            //transform.rotation = Quaternion.Euler(0, 0, rot_z * (i / iMax) - 90);
+            Quaternion target = Quaternion.Euler(0, 0, rot_z - 90);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, target, 5 * Time.deltaTime);
+            //wait before next iteration
+            yield return new WaitForSeconds(0.02f);
         }
     }
 

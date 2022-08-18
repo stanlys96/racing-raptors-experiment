@@ -160,9 +160,10 @@ public class APICall : MonoBehaviour
     [SerializeField] RuntimeAnimatorController raptorSprite8 = null;
     [SerializeField] RuntimeAnimatorController raptorSprite9 = null;
     GameObject spawnPoints = null;
+    public GameObject thisSceneCanvas;
     public int[] raptorsInPlay = new int[8];
     public int injuredRaptor;
-    public int fightWinner;
+    public int fightWinner = 34;
     public int[] fighters = new int[2];
     public int[] top3 = new int[3];
     public int[] theRestRacer = new int[5];
@@ -171,10 +172,10 @@ public class APICall : MonoBehaviour
     public int deathRaceWinner;
     public int ripRaptor;
     public bool hasStarted = false;
-    private int[] currentQueue = new int[8];
+    public int[] currentQueue = new int[8];
     private GameObject[] currentGameObjectRaptors = new GameObject[8];
     public Dictionary<int, RuntimeAnimatorController> tokenIdToSprite = new Dictionary<int, RuntimeAnimatorController>();
-    public int[] mockTokenId = { 1, 2, 3, 4, 5, 6, 7, 8 };
+    public int[] mockTokenId = { 10, 2, 3, 8, 5, 6, 25, 34 };
     public string[] mockBodyType = { "Scaled", "Jigsaw", "Rhodnite", "Bolt", "Stripe", "Undead", "Marble", "Flame" };
 
     public double GetAverage(int[] arr)
@@ -282,10 +283,36 @@ public class APICall : MonoBehaviour
         spawnPoints = GameObject.FindWithTag("SpawnPoint");
     }
 
+    public float GetRandomNumber(float minimum, float maximum)
+    {
+        System.Random random = new System.Random();
+        return (float)(random.NextDouble() * ((double)maximum - (double)minimum) + (double)minimum);
+    }
+
+    float[] NextFloat(float randNumber)
+    {
+        float total = randNumber;
+        System.Random rnd = new System.Random();
+        float[] result = new float[6];
+        for (int i = 0; i < 6; i++)
+        {
+            float minimum = total / (6 - i) * 0.6f;
+            float maximum = total / (6 - i) * 1.3f;
+            result[i] = GetRandomNumber(minimum, maximum);
+            total -= result[i];
+        }
+        return result;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
         GetData();
+        float[] res = NextFloat(4.8f);
+        foreach (var item in res)
+        {
+            print(item);
+        }
         DontDestroyOnLoad(gameObject);
     }
 
@@ -322,24 +349,28 @@ public class APICall : MonoBehaviour
             int spawnPointIndex = 0;
             foreach (GameObject raptorGameObject in currentGameObjectRaptors)
             {
-                if (spawnPoints != null)
+                if (currentQueue[spawnPointIndex] != 0)
                 {
-                    if (raptorGameObject != null)
+                    if (spawnPoints != null)
                     {
-                        if (spawnPoints.transform.GetChild(spawnPointIndex).gameObject.transform.childCount > 0)
+                        if (raptorGameObject != null)
                         {
-                            Destroy(spawnPoints.transform.GetChild(spawnPointIndex).gameObject.transform.GetChild(0).gameObject);
-                        }
+                            if (spawnPoints.transform.GetChild(spawnPointIndex).gameObject.transform.childCount > 0)
+                            {
+                                Destroy(spawnPoints.transform.GetChild(spawnPointIndex).gameObject.transform.GetChild(0).gameObject);
+                            }
 
-                        Instantiate(raptorGameObject, spawnPoints.transform.GetChild(spawnPointIndex).transform);
-                        spawnPointIndex++;
+                            GameObject raptorObject = Instantiate(raptorGameObject, spawnPoints.transform.GetChild(spawnPointIndex).transform);
+                            raptorObject.GetComponent<RaptorTokenIDIdle>().SetTokenIdText(mockTokenId[spawnPointIndex].ToString());
+                            spawnPointIndex++;
+                        }
                     }
                 }
             }
             if (count == 8)
             {
-                fighters[0] = mockTokenId[4];
-                fighters[1] = mockTokenId[7];
+                fighters[0] = mockTokenId[7];
+                fighters[1] = mockTokenId[3];
                 top3[0] = mockTokenId[0];
                 top3[1] = mockTokenId[1];
                 top3[2] = mockTokenId[2];
@@ -356,7 +387,14 @@ public class APICall : MonoBehaviour
                 quickPlayWinner = top3[0];
                 hasStarted = true;
                 yield return new WaitForSeconds(5f);
+                Fader fader = FindObjectOfType<Fader>();
+                DontDestroyOnLoad(gameObject);
+                yield return fader.FadeOut(1f);
+                thisSceneCanvas.gameObject.SetActive(false);
                 yield return SceneManager.LoadSceneAsync(1);
+                yield return new WaitForSeconds(0.5f);
+                yield return fader.FadeIn(1f);
+                Destroy(gameObject);
             }
             yield return null;
         }
