@@ -27,20 +27,11 @@ public class PlayerRacing : MonoBehaviour
     private float dashSpeed = 1.6f;
     private bool isJumping = false;
     private int index = 0;
-    private float changeSeason = 10f;
+    private float changeSeason = 5f;
     private float timeSinceLastChangeSeason = 0;
-    public float[] speeds = {};
+    public float[] speeds = new float[12];
     private float checkTime = 0f;
     private bool isFinished = false;
-    private float[] mainObjectSpeeds = { 1f, 1.05f, 0.95f, 0.94f, 1.1f, 1f, 1.2f };
-    private float[] firstPlaceSpeeds = { 0.92f, 0.95f, 1.05f, 1.03f, 1.02f, 0.97f, 1.1f };
-    private float[] secondPlaceSpeeds = { 0.95f, 1.05f, 0.92f, 1f, 1.05f, 1.03f, 1.04f };
-    private float[] thirdPlaceSpeeds = { 0.95f, 1.03f, 1.1f, 0.94f, 0.95f, 0.98f, 1.01f };
-    private float[] fourthPlaceSpeeds = { 1.03f, 1.1f, 0.95f, 0.9f, 0.92f, 0.91f, 0.93f };
-    private float[] fifthPlaceSpeeds = { 1.1f, 1.03f, 0.95f, 0.92f, 0.91f, 1.04f, 0.98f };
-    private float[] sixthPlaceSpeeds = { 1f, 1.03f, 1f, 0.9f, 0.91f, 0.92f, 1.1f };
-    private float[] seventhPlaceSpeeds = { 1.1f, 1.03f, 0.9f, 0.92f, 0.99f, 1.02f, 1f };
-    private float[] eighthPlaceSpeeds =  { 1.03f, 1.04f, 0.94f, 0.92f, 1f, 1.03f, 1f };
     private bool isRotating = false;
     private float delayGoingLeftOrRight = 0.25f;
     private float lastGoingLeftOrRight = Mathf.Infinity;
@@ -60,39 +51,39 @@ public class PlayerRacing : MonoBehaviour
         }
         if (gameObject.tag == "MainObject")
         {
-            speeds = seventhPlaceSpeeds;
+            speeds = APICall.instance.secondPlaceSpeeds;
         }
         if (tokenId == APICall.instance.top3[0])
         {
-            speeds = firstPlaceSpeeds;
+            speeds = APICall.instance.firstPlaceSpeeds;
         }
         if (tokenId == APICall.instance.top3[1])
         {
-            speeds = secondPlaceSpeeds;
+            speeds = APICall.instance.secondPlaceSpeeds;
         }
         if (tokenId == APICall.instance.top3[2])
         {
-            speeds = thirdPlaceSpeeds;
+            speeds = APICall.instance.thirdPlaceSpeeds;
         }
         if (tokenId == APICall.instance.theRestRacer[0])
         {
-            speeds = fourthPlaceSpeeds;
+            speeds = APICall.instance.fourthPlaceSpeeds;
         }
         if (tokenId == APICall.instance.theRestRacer[1])
         {
-            speeds = fifthPlaceSpeeds;
+            speeds = APICall.instance.fifthPlaceSpeeds;
         }
         if (tokenId == APICall.instance.theRestRacer[2])
         {
-            speeds = sixthPlaceSpeeds;
+            speeds = APICall.instance.sixthPlaceSpeeds;
         }
         if (tokenId == APICall.instance.theRestRacer[3])
         {
-            speeds = seventhPlaceSpeeds;
+            speeds = APICall.instance.seventhPlaceSpeeds;
         }
         if (tokenId == APICall.instance.theRestRacer[4])
         {
-            speeds = eighthPlaceSpeeds;
+            speeds = APICall.instance.eighthPlaceSpeeds;
         }
         if (tokenId == APICall.instance.fighters[0])
         {
@@ -162,7 +153,7 @@ public class PlayerRacing : MonoBehaviour
 
         //    }
         //}
-        if (tokenId == APICall.instance.fighters[1] && index == 1)
+        if (tokenId == APICall.instance.fighters[1] && index == 3)
         {
             lastGoingLeftOrRight = 0f;
             GameObject targetFighter = GameObject.FindGameObjectWithTag("Fighter1");

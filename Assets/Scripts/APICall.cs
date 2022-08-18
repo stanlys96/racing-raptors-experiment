@@ -177,6 +177,18 @@ public class APICall : MonoBehaviour
     public Dictionary<int, RuntimeAnimatorController> tokenIdToSprite = new Dictionary<int, RuntimeAnimatorController>();
     public int[] mockTokenId = { 10, 2, 3, 8, 5, 6, 25, 34 };
     public string[] mockBodyType = { "Scaled", "Jigsaw", "Rhodnite", "Bolt", "Stripe", "Undead", "Marble", "Flame" };
+    public float[] totalRaptorSpeeds = { 12f, 11.95f, 11.90f, 11.85f, 11.80f, 11.75f };
+    public float[] raptorFighterSpeeds = { 11.70f, 11.65f };
+    private static System.Random rnd = new System.Random();
+    public float[] mainObjectSpeeds = new float[12];
+    public float[] firstPlaceSpeeds = new float[12];
+    public float[] secondPlaceSpeeds = new float[12];
+    public float[] thirdPlaceSpeeds = new float[12];
+    public float[] fourthPlaceSpeeds = new float[12];
+    public float[] fifthPlaceSpeeds = new float[12];
+    public float[] sixthPlaceSpeeds = new float[12];
+    public float[] seventhPlaceSpeeds = new float[12];
+    public float[] eighthPlaceSpeeds = new float[12];
 
     public double GetAverage(int[] arr)
     {
@@ -285,22 +297,23 @@ public class APICall : MonoBehaviour
 
     public float GetRandomNumber(float minimum, float maximum)
     {
-        System.Random random = new System.Random();
-        return (float)(random.NextDouble() * ((double)maximum - (double)minimum) + (double)minimum);
+        double val = (rnd.NextDouble() * (maximum - minimum) + minimum);
+        return (float)val;
     }
 
     float[] NextFloat(float randNumber)
     {
         float total = randNumber;
-        System.Random rnd = new System.Random();
-        float[] result = new float[6];
-        for (int i = 0; i < 6; i++)
+        float[] result = new float[12];
+        for (int i = 0; i < 11; i++)
         {
-            float minimum = total / (6 - i) * 0.6f;
-            float maximum = total / (6 - i) * 1.3f;
+            float minimum = (randNumber / 12) * 0.9f;
+            float maximum = (randNumber / 12) * 1.1f;
             result[i] = GetRandomNumber(minimum, maximum);
             total -= result[i];
         }
+        result[result.Length - 1] = total;
+        total = 0;
         return result;
     }
 
@@ -308,10 +321,47 @@ public class APICall : MonoBehaviour
     void Start()
     {
         GetData();
-        float[] res = NextFloat(4.8f);
-        foreach (var item in res)
+        for (int i = 0; i < totalRaptorSpeeds.Length; i++)
         {
-            print(item);
+            float item = totalRaptorSpeeds[i];
+            float[] floatResult = NextFloat(item);
+            if (i == 0)
+            {
+                firstPlaceSpeeds = floatResult;
+            }
+            if (i == 1)
+            {
+                secondPlaceSpeeds = floatResult;
+            }
+            if (i == 2)
+            {
+                thirdPlaceSpeeds = floatResult;
+            }
+            if (i == 3)
+            {
+                fourthPlaceSpeeds = floatResult;
+            }
+            if (i == 4)
+            {
+                fifthPlaceSpeeds = floatResult;
+            }
+            if (i == 5)
+            {
+                sixthPlaceSpeeds = floatResult;
+            }
+        }
+        for (int i = 0; i < raptorFighterSpeeds.Length; i++)
+        {
+            float item = raptorFighterSpeeds[i];
+            float[] floatResult = NextFloat(item);
+            if (i == 0)
+            {
+                seventhPlaceSpeeds = floatResult;
+            }
+            if (i == 1)
+            {
+                eighthPlaceSpeeds = floatResult;
+            }
         }
         DontDestroyOnLoad(gameObject);
     }
@@ -386,13 +436,12 @@ public class APICall : MonoBehaviour
                 }
                 quickPlayWinner = top3[0];
                 hasStarted = true;
-                yield return new WaitForSeconds(5f);
+                yield return new WaitForSeconds(10f);
                 Fader fader = FindObjectOfType<Fader>();
                 DontDestroyOnLoad(gameObject);
                 yield return fader.FadeOut(1f);
                 thisSceneCanvas.gameObject.SetActive(false);
                 yield return SceneManager.LoadSceneAsync(1);
-                yield return new WaitForSeconds(0.5f);
                 yield return fader.FadeIn(1f);
                 Destroy(gameObject);
             }
